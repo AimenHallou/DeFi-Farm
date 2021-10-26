@@ -16,7 +16,8 @@ module.exports = async function(deployer, network ,accounts) {
       await deployer.deploy(TokenFarm, dappToken.address, daiToken.address)
       const tokenFarm = await TokenFarm.deployed()
 
-// Transfer
-      await tokenFarm.transfer(tokenFarm.address, "1000000000000000000000000")
+// Transfer all available 
+      await dappToken.transfer(tokenFarm.address, "1000000000000000000000000")
+      await daiToken.transfer(accounts[1], "1000000000000000000000000")
 }
 
