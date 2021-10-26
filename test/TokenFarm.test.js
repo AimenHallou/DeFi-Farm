@@ -4,17 +4,25 @@ const TokenFarm =artifacts.require("TokenFarm")
 
 require("chai").use(require("chai-as-promised")).should
 
-contract("TokenFarm", (accounts)=>{
+function tokens(n) {
+    return web3.utils.toWei(n,"ether")
+}
+
+contract("TokenFarm", ([owner, investor])=>{
     
     let daiToken, dappToken, tokenFarm
 
     before(async ()=>{
+
         daiToken = await DaiToken.new()
         dappToken = await DappToken.new()
         tokenFarm = await TokenFarm.new(dappToken.address, daiToken.address)
 
+        await dappToken.transfer(tokenFarm.address, tokens("1000000"))
 
-        await dappToken.transfer(tokenFarm.address,"1000000000000000000000000" )
+
+        await daiToken.transfer(investor, tokens("100"), {from: owner})
+
     })
 
 
@@ -25,6 +33,30 @@ contract("TokenFarm", (accounts)=>{
         })
     })
 
+    describe("Dapp Token deployment", async()=> {
+        it("has a name", async()=> {
+            const name = await dappToken.name()
+            assert.equal(name, "DApp Token")
+        })
+    })
 
+    describe("Token Farm deployment", async()=> {
+        it("has a name", async()=> {
+            const name = await tokenFarm.name()
+            assert.equal(name, "Dapp Token Farm")
+        })
+
+        it("contract has tokens", async()=> {
+            const balance = await dappToken.balanceOf(tokenFarm.address)
+            assert.equal(balance.toString(), tokens("1000000"))
+        })
+    })
+
+    describe("Farming Token", async()=> {
+
+        it("rewards investors for staking mDai tokens", async()=> {
+            
+        })
+    })
 
 })
