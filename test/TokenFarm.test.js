@@ -6,6 +6,8 @@ const TokenFarm =artifacts.require("TokenFarm")
 
 require("chai").use(require("chai-as-promised")).should
 
+const should = require("chai").should();
+
 function tokens(n) {
     return web3.utils.toWei(n,"ether")
 }
@@ -76,6 +78,16 @@ contract("TokenFarm", ([owner, investor])=>{
 
             result = await tokenFarm.isStaking(investor)
             assert.equal(result.toString(), "true", "investor staking status correct after staking")
+
+            // Issuing tokens
+
+            await tokenFarm.issueTokens({from: owner})
+
+            result = await dappToken.balanceOf(investor)
+            assert.equal(result.toString(), tokens("100"), "investor DApp Token wallet correct after issuance")
+            
+            await tokenFarm.issueTokens({from: investor}).should.be.rejected;
+
         })
     })
 
