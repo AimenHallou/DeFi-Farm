@@ -83,9 +83,9 @@ class App extends Component {
       daiToken: {},
       dappToken: {},
       tokenFarm: {},
-      daiTokenBalance: {},
-      dappTokenBalance: {},
-      stakingBalance: {},
+      daiTokenBalance: "0",
+      dappTokenBalance: "0",
+      stakingBalance: "0",
       loading: true
     }
   }
@@ -93,6 +93,7 @@ class App extends Component {
   render() {
 
     let content
+    console.log(this.state.stakingBalance)
     if (this.state.loading) {
       content = <p id="loader" className="text-center">Loading...</p>
     } else {
