@@ -1,17 +1,108 @@
 import React, { Component } from 'react'
+import Web3 from "web3";
+
+import DaiToken from "../abis/DaiToken.json"
+import DappToken from "../abis/DappToken.json"
+import TokenFarm from "../abis/TokenFarm.json"
+
+
 import Navbar from './Navbar'
+import Main from "./Main"
 import './App.css'
 
 class App extends Component {
 
+  async componentWillMount() {
+    await this.loadWeb3()
+    await this.loadBlockchainData()
+  }
+
+  async loadBlockchainData(){
+    const web3 = window.web3
+    const accounts = await web3.eth.getAccounts()
+    this.setState({account: accounts[0]})
+
+    const networkID = await web3.eth.net.getId()
+    console.log(networkID)
+
+    // Load DaiToken
+
+    const daiTokenData = DaiToken.networks[networkID]
+    if (daiTokenData) {
+      const daiToken = new web3.eth.Contract(DaiToken.abi, daiTokenData.address)
+      this.setState({daiToken})
+      let daiTokenBalance = await daiToken.methods.balanceOf(this.state.account).call()
+      this.setState({daiTokenBalance: daiTokenBalance.toString()})
+    } else {
+      window.alert("DaiToken contract not deployed to current network")
+    }
+        
+    // Load DappToken
+
+    const dappTokenData = DappToken.networks[networkID]
+    if (dappTokenData) {
+      const dappToken = new web3.eth.Contract(DappToken.abi, dappTokenData.address)
+      this.setState({dappToken})
+      let dappTokenBalance = await dappToken.methods.balanceOf(this.state.account).call()
+      this.setState({dappTokenBalance: dappTokenBalance.toString()})
+    } else {
+      window.alert("DappToken contract not deployed to current network")
+    }
+        
+    // Load TokenFarm
+
+    const tokenFarmData = TokenFarm.networks[networkID]
+    if (tokenFarmData) {
+      const tokenFarm = new web3.eth.Contract(TokenFarm.abi, tokenFarmData.address)
+      this.setState({tokenFarm})
+      let tokenFarmBalance = await tokenFarm.methods.stakingBalance(this.state.account).call()
+      this.setState({tokenFarmBalance: tokenFarmBalance.toString()})
+    } else {
+      window.alert("DappToken contract not deployed to current network")
+    }
+    this.setState({loading: false})
+  }
+
+  async loadWeb3() {
+    if (window.ethereum) {
+      window.web3 = new Web3(window.ethereum)
+      await window.ethereum.enable()
+    }
+    else if (window.web3) {
+      window.web3 = new Web3(window.web3.currentProvider)
+    }
+    else {
+      window.alert("Non-Ethereum browser detected. MetaMask unlinked!")
+    }
+  }
+
   constructor(props) {
     super(props)
     this.state = {
-      account: '0x0'
+      account: '0x0',
+      daiToken: {},
+      dappToken: {},
+      tokenFarm: {},
+      daiTokenBalance: {},
+      dappTokenBalance: {},
+      stakingBalance: {},
+      loading: true
     }
   }
 
   render() {
+
+    let content
+    if (this.state.loading) {
+      content = <p id="loader" className="text-center">Loading...</p>
+    } else {
+      content = <Main
+      daiTokenBalance = {this.state.daiTokenBalance} 
+      dappTokenBalance = {this.state.dappTokenBalance}
+      stakingBalance = {this.state.stakingBalance}
+      />
+    }
+
     return (
       <div>
         <Navbar account={this.state.account} />
@@ -23,10 +114,8 @@ class App extends Component {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
+                  {content}
                 </a>
-
-                <h1>Hello, World!</h1>
-
               </div>
             </main>
           </div>
